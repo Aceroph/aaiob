@@ -1,0 +1,20 @@
+[package]
+name = "aaiob"
+version = "0.0.1"
+authors = [ "Aceroph" ]
+edition = "2024"
+description = "Acero's all-in-one bar"
+repository = "https://github.com/Aceroph/aaiob"
+
+[dependencies]
+gtk4 = "0.9"
+gtk4-layer-shell = "0.4"
+serde = { version = "*", features = [ "derive" ] }
+toml = "0.8"
+log = "0.4"
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
