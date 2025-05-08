@@ -2,7 +2,10 @@ pub mod error;
 pub mod logger;
 pub mod widgets;
 
-use gtk4::{builders::WindowBuilder, glib::user_config_dir, prelude::GtkWindowExt, Application, ApplicationWindow};
+use gtk4::{
+    Application, ApplicationWindow, builders::WindowBuilder, glib::user_config_dir,
+    prelude::GtkWindowExt,
+};
 use gtk4_layer_shell::{Edge, LayerShell};
 use log::error;
 use serde::Deserialize;
@@ -27,8 +30,6 @@ impl Window {
             .default_height(self.height)
             .application(app)
             .build();
-
-        window.set_keep_a
 
         match self.position.as_str() {
             "top" => window.set_anchor(Edge::Top, true),
