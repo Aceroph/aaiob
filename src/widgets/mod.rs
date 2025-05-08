@@ -8,7 +8,7 @@ use std::{
 };
 use toml::Table;
 
-type Factory = Box<dyn Fn(&Table) -> Result<Box<dyn Widget>, Error> + Sync + Send>;
+type Factory = fn(&Table) -> Result<Box<dyn Widget>, Error>;
 
 pub trait Widget: Send + Sync {
     fn load(&self) -> Result<GtkWidget, Error>;
