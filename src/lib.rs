@@ -2,6 +2,7 @@ pub mod error;
 pub mod logger;
 pub mod widgets;
 
+use error::Error;
 use gtk4::{
     Application, ApplicationWindow, builders::WindowBuilder, glib::user_config_dir,
     prelude::GtkWindowExt,
@@ -15,14 +16,14 @@ use widgets::{create_widget_from_toml, get_widget};
 
 #[derive(Deserialize)]
 pub struct Window {
-    pub position: String,
+    pub position: Option<String>,
     pub widget: Option<Value>,
     pub width: i32,
     pub height: i32,
 }
 
 impl Window {
-    pub fn init(&self, app: &Application, name: &str) {
+    pub fn init(&self, app: &Application, name: &str) -> Result<(), error::Error> {
         let window = ApplicationWindow::builder()
             .title(name)
             .decorated(false)
@@ -31,15 +32,24 @@ impl Window {
             .application(app)
             .build();
 
-        match self.position.as_str() {
-            "top" => window.set_anchor(Edge::Top, true),
-            e => panic!("Unknown position {}", e),
+        if let Some(position) = &self.position {
+            if gtk4_layer_shell::is_supported() {
+                let anchors = match position.as_str() {
+                    "top" => vec![Edge::Left, Edge::Top, Edge::Right],
+                    _ => Err(Error::InvalidValueForAttribute("position"))?,
+                };
+                window.init_layer_shell();
+                for anchor in anchors {
+                    window.set_anchor(anchor, true);
+                }
+            } else {
+                Err(Error::X11NotSupported)?
+            }
         }
 
         window.present();
 
         if let Some(widget) = &self.widget {
-            println!("testt");
             let gtk_widget = match widget {
                 Value::Table(widget_config) => {
                     let _ = create_widget_from_toml("app".to_string(), widget_config);
@@ -51,6 +61,7 @@ impl Window {
             .unwrap();
             window.set_child(Some(&gtk_widget));
         }
+        Ok(())
     }
 }
 

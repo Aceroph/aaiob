@@ -42,7 +42,7 @@ impl log::Log for Logger {
 
             let level = record.level().to_string();
 
-            println!("\x1b[{};1m{}\x1b[0m {}", color, &level[0..4], f_args);
+            println!("\x1b[{};1m{}\x1b[0m {}", color, &level, f_args);
         }
     }
 

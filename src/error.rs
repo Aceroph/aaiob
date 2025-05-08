@@ -5,6 +5,8 @@ pub enum Error {
     ModuleNotFound,
     InvalidAttribute,
     MissingAttribute,
+    X11NotSupported,
+    InvalidValueForAttribute(&'static str),
 }
 
 impl Display for Error {
@@ -13,6 +15,10 @@ impl Display for Error {
             Error::ModuleNotFound => write!(f, "Module not found"),
             Error::InvalidAttribute => write!(f, "Invalid attribute"),
             Error::MissingAttribute => write!(f, "Missing attribute"),
+            Error::X11NotSupported => write!(f, "X11 not supported for shell layer windows"),
+            Error::InvalidValueForAttribute(attribute) => {
+                write!(f, "Invalid value for attribute {attribute}")
+            }
         }
     }
 }

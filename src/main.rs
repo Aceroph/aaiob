@@ -1,14 +1,13 @@
-use aaiob::error::Error;
+use aaiob::Config;
 use aaiob::logger;
 use aaiob::widgets::{create_widget_from_toml, generic};
-use aaiob::{Config, Window};
 use gtk4::prelude::*;
 use gtk4::{Application, glib};
-use log::warn;
-use toml::Table;
+use log::error;
 
+#[allow(unused_must_use)]
 fn main() -> glib::ExitCode {
-    let _ = logger::init();
+    logger::init();
 
     // Register generic widgets
     generic::register_all();
@@ -31,7 +30,10 @@ fn main() -> glib::ExitCode {
         // Load windows
         if let Some(windows) = config.windows {
             for (name, window) in windows.iter() {
-                window.init(app, name);
+                match window.init(app, name) {
+                    Err(err) => error!("{err}"),
+                    Ok(_) => (),
+                }
             }
         }
     });
