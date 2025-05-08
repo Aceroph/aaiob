@@ -3,18 +3,51 @@ pub mod logger;
 pub mod widgets;
 
 use error::Error;
-use gtk4::{Application, ApplicationWindow, glib::user_config_dir, prelude::GtkWindowExt};
+use gtk4::{Application, ApplicationWindow, Widget, glib::user_config_dir, prelude::GtkWindowExt};
 use gtk4_layer_shell::{Edge, LayerShell};
 use log::error;
 use serde::Deserialize;
 use std::{collections::HashMap, fs::read_to_string, path::Path, process};
-use toml::{Table, Value};
+use toml::Table;
 use widgets::{create_widget_from_toml, get_widget};
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+pub enum Module {
+    Reference(String),
+    Definition(Table),
+}
+
+impl Into<Widget> for Module {
+    fn into(self) -> Widget {
+        match self {
+            Module::Definition(widget_config) => {
+                create_widget_from_toml("app".to_string(), &widget_config).unwrap();
+                get_widget("app")
+            }
+            Module::Reference(name) => get_widget(&name),
+        }
+        .unwrap()
+    }
+}
+
+impl From<&Module> for Widget {
+    fn from(value: &Module) -> Self {
+        match value {
+            Module::Definition(widget_config) => {
+                create_widget_from_toml("app".to_string(), &widget_config).unwrap();
+                get_widget("app")
+            }
+            Module::Reference(name) => get_widget(&name),
+        }
+        .unwrap()
+    }
+}
 
 #[derive(Deserialize)]
 pub struct Window {
     pub position: Option<String>,
-    pub widget: Option<Value>,
+    pub widget: Option<Module>,
     pub width: i32,
     pub height: i32,
 }
@@ -47,16 +80,7 @@ impl Window {
         window.present();
 
         if let Some(widget) = &self.widget {
-            let gtk_widget = match widget {
-                Value::Table(widget_config) => {
-                    create_widget_from_toml("app".to_string(), widget_config)?;
-                    get_widget("app")
-                }
-                Value::String(name) => get_widget(&name),
-                _ => todo!("Invalid type passed as widget"),
-            }
-            .unwrap();
-            window.set_child(Some(&gtk_widget));
+            window.set_child(Some(&Into::<Widget>::into(widget)));
         }
         Ok(())
     }
