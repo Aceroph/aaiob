@@ -1,12 +1,10 @@
 use gtk4::Label as GtkLabel;
 use serde::Deserialize;
 
-use crate::widgets::{Widget, WidgetFactory};
-
-pub struct LabelFactory;
+use crate::widgets::Widget;
 
 #[derive(Deserialize)]
-struct Label {
+pub struct Label {
     format: Option<String>,
 }
 
@@ -20,13 +18,10 @@ impl Widget for Label {
         let label = GtkLabel::new(label_content);
         Ok(label.into())
     }
-}
-
-impl WidgetFactory for LabelFactory {
-    fn create_from_toml(
-        &self,
-        config: &toml::Table,
-    ) -> Result<Box<dyn Widget>, crate::error::Error> {
+    fn from_toml(config: &toml::Table) -> Result<Box<dyn Widget>, crate::error::Error>
+    where
+        Self: Sized,
+    {
         let widget: Label = config.clone().try_into().unwrap();
         Ok(Box::new(widget))
     }

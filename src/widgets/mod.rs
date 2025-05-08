@@ -8,21 +8,22 @@ use std::{
 };
 use toml::Table;
 
+type Factory = Box<dyn Fn(&Table) -> Result<Box<dyn Widget>, Error> + Sync + Send>;
+
 pub trait Widget: Send + Sync {
     fn load(&self) -> Result<GtkWidget, Error>;
-}
-
-pub trait WidgetFactory: Send + Sync {
-    fn create_from_toml(&self, config: &Table) -> Result<Box<dyn Widget>, Error>;
+    fn from_toml(config: &Table) -> Result<Box<dyn Widget>, Error>
+    where
+        Self: Sized;
 }
 
 pub static WIDGET_REGISTRY: LazyLock<Arc<Mutex<HashMap<String, Box<dyn Widget>>>>> =
     LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
-static WIDGET_FACTORIES: LazyLock<Arc<Mutex<HashMap<&'static str, Box<dyn WidgetFactory>>>>> =
+static WIDGET_FACTORIES: LazyLock<Arc<Mutex<HashMap<&'static str, Factory>>>> =
     LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
-pub fn register_factory(widget_type: &'static str, factory: Box<dyn WidgetFactory>) {
+pub fn register_factory(widget_type: &'static str, factory: Factory) {
     let mut factories = WIDGET_FACTORIES.lock().unwrap();
     factories.insert(widget_type, factory);
 }
@@ -37,7 +38,7 @@ pub fn create_widget_from_toml(name: String, config: &Table) -> Result<(), Error
     let factories = WIDGET_FACTORIES.lock().unwrap();
     let factory = factories.get(widget_type).ok_or(Error::ModuleNotFound)?;
 
-    let widget = factory.create_from_toml(config)?;
+    let widget = factory(config)?;
 
     let mut registry = WIDGET_REGISTRY.lock().unwrap();
     registry.insert(name, widget);

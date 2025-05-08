@@ -1,13 +1,11 @@
 use crate::error::Error;
 
-use crate::widgets::{Widget, WidgetFactory};
+use crate::widgets::Widget;
 use gtk4::{Button as GtkButton, Widget as GtkWidget};
 use serde::Deserialize;
 
-pub struct ButtonFactory;
-
 #[derive(Deserialize)]
-struct Button {
+pub struct Button {
     label: Option<String>,
 }
 
@@ -21,10 +19,10 @@ impl Widget for Button {
 
         Ok(button.into())
     }
-}
-
-impl WidgetFactory for ButtonFactory {
-    fn create_from_toml(&self, config: &toml::Table) -> Result<Box<dyn Widget>, Error> {
+    fn from_toml(config: &toml::Table) -> Result<Box<dyn Widget>, Error>
+    where
+        Self: Sized,
+    {
         let widget: Button = config.clone().try_into().unwrap();
         Ok(Box::new(widget))
     }
