@@ -3,10 +3,7 @@ pub mod logger;
 pub mod widgets;
 
 use error::Error;
-use gtk4::{
-    Application, ApplicationWindow, builders::WindowBuilder, glib::user_config_dir,
-    prelude::GtkWindowExt,
-};
+use gtk4::{Application, ApplicationWindow, glib::user_config_dir, prelude::GtkWindowExt};
 use gtk4_layer_shell::{Edge, LayerShell};
 use log::error;
 use serde::Deserialize;
@@ -52,7 +49,7 @@ impl Window {
         if let Some(widget) = &self.widget {
             let gtk_widget = match widget {
                 Value::Table(widget_config) => {
-                    let _ = create_widget_from_toml("app".to_string(), widget_config);
+                    create_widget_from_toml("app".to_string(), widget_config)?;
                     get_widget("app")
                 }
                 Value::String(name) => get_widget(&name),

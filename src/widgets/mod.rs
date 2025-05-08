@@ -2,7 +2,6 @@ pub mod generic;
 
 use super::error::Error;
 use gtk4::Widget as GtkWidget;
-use log::info;
 use std::{
     collections::HashMap,
     sync::{Arc, LazyLock, Mutex},
@@ -25,7 +24,6 @@ static WIDGET_FACTORIES: LazyLock<Arc<Mutex<HashMap<&'static str, Box<dyn Widget
 
 pub fn register_factory(widget_type: &'static str, factory: Box<dyn WidgetFactory>) {
     let mut factories = WIDGET_FACTORIES.lock().unwrap();
-    info!("Registered factory {}", widget_type);
     factories.insert(widget_type, factory);
 }
 
@@ -41,7 +39,6 @@ pub fn create_widget_from_toml(name: String, config: &Table) -> Result<(), Error
 
     let widget = factory.create_from_toml(config)?;
 
-    info!("Created module {}", name.as_str());
     let mut registry = WIDGET_REGISTRY.lock().unwrap();
     registry.insert(name, widget);
     Ok(())
