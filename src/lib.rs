@@ -66,6 +66,18 @@ impl Window {
             if gtk4_layer_shell::is_supported() {
                 let anchors = match position.as_str() {
                     "top" => vec![Edge::Left, Edge::Top, Edge::Right],
+                    "top-left" | "left-top" => vec![Edge::Left, Edge::Top],
+                    "top-right" | "right-top" => vec![Edge::Top, Edge::Right],
+                    "top-center" | "center-top" => vec![Edge::Top],
+                    "left" => vec![Edge::Top, Edge::Left, Edge::Bottom],
+                    "left-center" | "center-left" => vec![Edge::Left],
+                    "center" => vec![],
+                    "right" => vec![Edge::Top, Edge::Right, Edge::Bottom],
+                    "right-center" | "center-right" => vec![Edge::Right],
+                    "bottom" => vec![Edge::Left, Edge::Top, Edge::Right],
+                    "bottom-left" | "left-bottom" => vec![Edge::Left, Edge::Bottom],
+                    "bottom-center" | "center-bottom" => vec![Edge::Bottom],
+                    "bottom-right" | "right-bottom" => vec![Edge::Bottom, Edge::Right],
                     _ => Err(Error::InvalidValueForAttribute("position"))?,
                 };
                 window.init_layer_shell();
